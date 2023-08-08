@@ -32,8 +32,7 @@ public class OpenSearchClientConfig {
         var sslContext = sslContext(keyStore(openSearchProperties.getType(), openSearchProperties.getCertificate(), openSearchProperties.getCertificatePassword()), openSearchProperties.getCertificatePassword());
         return RestClient.builder(httpHost)
                 .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder
-                        .setDefaultCredentialsProvider(credentialsProvider)
-                        .setSSLContext(sslContext)).build();
+                        .setDefaultCredentialsProvider(credentialsProvider)).build();
     }
 
     @Bean
