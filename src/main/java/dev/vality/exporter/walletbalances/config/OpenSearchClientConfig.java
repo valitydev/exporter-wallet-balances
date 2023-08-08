@@ -29,7 +29,6 @@ public class OpenSearchClientConfig {
                 AuthScope.ANY,
                 new UsernamePasswordCredentials(openSearchProperties.getUsername(), openSearchProperties.getPassword()));
         var httpHost = new HttpHost(openSearchProperties.getHostname(), openSearchProperties.getPort(), "https");
-        var sslContext = sslContext(keyStore(openSearchProperties.getType(), openSearchProperties.getCertificate(), openSearchProperties.getCertificatePassword()), openSearchProperties.getCertificatePassword());
         return RestClient.builder(httpHost)
                 .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder
                         .setDefaultCredentialsProvider(credentialsProvider)).build();

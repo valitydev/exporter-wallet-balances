@@ -59,7 +59,5 @@ opensearch:
   username: changeit
   password: changeit
   hostname: changeit
-  port: changeit
-  type: changeit
-  certificatePassword: changeit
+  port: 9200
   certificate: changeit
