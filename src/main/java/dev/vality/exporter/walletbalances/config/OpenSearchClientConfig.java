@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.opensearch.client.RestClient;
 import org.opensearch.client.json.jackson.JacksonJsonpMapper;
@@ -34,7 +35,8 @@ public class OpenSearchClientConfig {
         return RestClient.builder(httpHost)
                 .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder
                         .setDefaultCredentialsProvider(credentialsProvider)
-                        .setSSLContext(sslContext(openSearchProperties.getCertificate()))).build();
+                        .setSSLContext(sslContext(openSearchProperties.getCertificate()))
+                        .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)).build();
     }
 
     @Bean
@@ -45,8 +47,7 @@ public class OpenSearchClientConfig {
 
     @SneakyThrows
     private SSLContext sslContext(Resource certificate) {
-        var tmf = TrustManagerFactory
-                .getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        var tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         try (InputStream pKeyFileStream = certificate.getInputStream()) {
             var cf = CertificateFactory.getInstance("X.509");
             var caCert = (X509Certificate) cf.generateCertificate(pKeyFileStream);
