@@ -56,6 +56,10 @@ interval:
   time: 60 #seconds
 
 opensearch:
-  endpoint: changeit
-  service: changeit
-  region: changeit
+  username: changeit
+  password: changeit
+  hostname: changeit
+  port: changeit
+  type: changeit
+  certificatePassword: changeit
+  certificate: changeit

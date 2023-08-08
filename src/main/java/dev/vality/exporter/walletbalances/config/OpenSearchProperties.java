@@ -3,14 +3,19 @@ package dev.vality.exporter.walletbalances.config;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.Resource;
 
 @Data
 @Configuration
 @ConfigurationProperties(prefix = "opensearch")
 public class OpenSearchProperties {
 
-    private String endpoint;
-    private String service;
-    private String region;
+    private String username;
+    private String password;
+    private String hostname;
+    private Integer port;
+    private String type;
+    private String certificatePassword;
+    private Resource certificate;
 
 }
