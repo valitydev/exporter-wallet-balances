@@ -5,7 +5,6 @@ import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.ssl.SSLContextBuilder;
 import org.opensearch.client.RestClient;
 import org.opensearch.client.json.jackson.JacksonJsonpMapper;
 import org.opensearch.client.opensearch.OpenSearchClient;
@@ -15,8 +14,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 import java.io.InputStream;
 import java.security.KeyStore;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 
 @Configuration
 @SuppressWarnings("LineLength")
@@ -31,7 +33,8 @@ public class OpenSearchClientConfig {
         var httpHost = new HttpHost(openSearchProperties.getHostname(), openSearchProperties.getPort(), "https");
         return RestClient.builder(httpHost)
                 .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder
-                        .setDefaultCredentialsProvider(credentialsProvider)).build();
+                        .setDefaultCredentialsProvider(credentialsProvider)
+                        .setSSLContext(sslContext(openSearchProperties.getCertificate()))).build();
     }
 
     @Bean
@@ -41,19 +44,19 @@ public class OpenSearchClientConfig {
     }
 
     @SneakyThrows
-    private SSLContext sslContext(KeyStore keyStore, String password) {
-        return new SSLContextBuilder()
-                .loadTrustMaterial(keyStore, (x509Certificates, s) -> true)
-                .loadKeyMaterial(keyStore, password.toCharArray())
-                .build();
-    }
-
-    @SneakyThrows
-    private KeyStore keyStore(String type, Resource certificate, String password) {
-        var keyStore = KeyStore.getInstance(type);
+    private SSLContext sslContext(Resource certificate) {
+        var tmf = TrustManagerFactory
+                .getInstance(TrustManagerFactory.getDefaultAlgorithm());
         try (InputStream pKeyFileStream = certificate.getInputStream()) {
-            keyStore.load(pKeyFileStream, password.toCharArray());
+            var cf = CertificateFactory.getInstance("X.509");
+            var caCert = (X509Certificate) cf.generateCertificate(pKeyFileStream);
+            var ks = KeyStore.getInstance(KeyStore.getDefaultType());
+            ks.load(null);
+            ks.setCertificateEntry("caCert", caCert);
+            tmf.init(ks);
         }
-        return keyStore;
+        var sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(null, tmf.getTrustManagers(), null);
+        return sslContext;
     }
 }
