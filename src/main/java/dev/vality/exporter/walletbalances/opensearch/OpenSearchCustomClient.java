@@ -1,5 +1,6 @@
 package dev.vality.exporter.walletbalances.opensearch;
 
+import dev.vality.exporter.walletbalances.config.OpenSearchProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.opensearch.client.json.JsonData;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class OpenSearchCustomClient {
 
+    private final OpenSearchProperties openSearchProperties;
     private final OpenSearchClient openSearchClient;
 
     @Value("${interval.time}")
@@ -27,7 +29,7 @@ public class OpenSearchCustomClient {
     @SneakyThrows
     public List<WalletBalanceData> getWalletBalanceData() {
         var searchRequest = new SearchRequest.Builder()
-                .index("empayre-processing")
+                .index(openSearchProperties.getIndex())
                 .query(q -> q.match(builder -> builder.field("message")
                         .query(builder1 -> builder1.stringValue("Wallet balance"))))
                 .query(q -> q.bool(builder -> builder.filter(this::range)))
