@@ -3,6 +3,7 @@ package dev.vality.exporter.walletbalances.opensearch;
 import dev.vality.exporter.walletbalances.config.OpenSearchProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.opensearch.client.json.JsonData;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch._types.query_dsl.Query;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OpenSearchCustomClient {
 
     private final OpenSearchProperties openSearchProperties;
@@ -34,10 +36,16 @@ public class OpenSearchCustomClient {
                         .query(builder1 -> builder1.stringValue("Wallet balance"))))
                 .query(q -> q.bool(builder -> builder.filter(this::range)))
                 .build();
-        return openSearchClient.search(searchRequest, WalletBalanceData.class).hits().hits()
+        var collect = openSearchClient.search(searchRequest, String.class).hits().hits()
                 .stream()
                 .map(Hit::source)
                 .collect(Collectors.toList());
+        log.info("{}", collect);
+//        return openSearchClient.search(searchRequest, WalletBalanceData.class).hits().hits()
+//                .stream()
+//                .map(Hit::source)
+//                .collect(Collectors.toList());
+        return List.of();
     }
 
     private ObjectBuilder<Query> range(Query.Builder builder1) {
