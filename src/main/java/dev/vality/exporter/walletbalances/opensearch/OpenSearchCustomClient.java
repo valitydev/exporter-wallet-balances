@@ -27,6 +27,7 @@ public class OpenSearchCustomClient {
     @SneakyThrows
     public List<WalletBalanceData> getWalletBalanceData() {
         var searchRequest = new SearchRequest.Builder()
+                .index("empayre-processing")
                 .query(q -> q.match(builder -> builder.field("message")
                         .query(builder1 -> builder1.stringValue("Wallet balance"))))
                 .query(q -> q.bool(builder -> builder.filter(this::range)))
