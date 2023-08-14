@@ -24,7 +24,6 @@ public class WalletBalancesService {
     public void registerMetrics() {
         var walletsBalancesDataByInterval = openSearchService.getWalletsBalancesDataByInterval();
         for (WalletBalanceData walletBalanceData : walletsBalancesDataByInterval) {
-            log.info("walletBalanceData {}", walletBalanceData);
             var id = walletBalanceData.getWallet().getId();
             if (!walletBalancesAggregatesMap.containsKey(id)) {
                 var gauge = Gauge.builder(
