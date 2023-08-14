@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@SuppressWarnings("LineLength")
 public class WalletBalancesService {
 
     private final OpenSearchService openSearchService;
