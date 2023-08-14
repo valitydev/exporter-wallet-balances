@@ -6,6 +6,8 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.opensearch.client.json.JsonData;
 import org.opensearch.client.opensearch.OpenSearchClient;
+import org.opensearch.client.opensearch._types.query_dsl.BoolQuery;
+import org.opensearch.client.opensearch._types.query_dsl.MatchQuery;
 import org.opensearch.client.opensearch._types.query_dsl.Query;
 import org.opensearch.client.opensearch._types.query_dsl.RangeQuery;
 import org.opensearch.client.opensearch.core.SearchRequest;
@@ -14,6 +16,7 @@ import org.opensearch.client.util.ObjectBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,13 +33,22 @@ public class OpenSearchCustomClient {
 
     @SneakyThrows
     public List<WalletBalanceData> getWalletBalanceData() {
+        MatchQuery mustMatchQuery1 = new MatchQuery.Builder().field("message").query(builder -> builder.stringValue("Wallet balance")).build();
+        MatchQuery mustMatchQuery2 = new MatchQuery.Builder().field("kubernetes.container_name").query(builder -> builder.stringValue("fistful")).build();
+        List mustQueries = new ArrayList<>();
+        mustQueries.add(mustMatchQuery1._toQuery());
+        mustQueries.add(mustMatchQuery2._toQuery());
+        BoolQuery boolQuery = new BoolQuery.Builder().must(mustQueries).minimumShouldMatch("1").build();
         var searchRequest = new SearchRequest.Builder()
                 .index(openSearchProperties.getIndex())
                 .query(q -> q.match(builder -> builder.field("message")
                         .query(builder1 -> builder1.stringValue("Wallet balance"))))
                 .query(q -> q.bool(builder -> builder.filter(this::range)))
                 .build();
-        var collect = openSearchClient.search(searchRequest, Object.class).hits().hits()
+        var collect = openSearchClient.search(s -> {
+                    s.query(boolQuery._toQuery());
+                    return s;
+                }, Object.class).hits().hits()
                 .stream()
                 .map(Hit::source)
                 .collect(Collectors.toList());
