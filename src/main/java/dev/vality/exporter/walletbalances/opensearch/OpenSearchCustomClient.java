@@ -6,10 +6,9 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.opensearch.client.json.JsonData;
 import org.opensearch.client.opensearch.OpenSearchClient;
-import org.opensearch.client.opensearch._types.query_dsl.BoolQuery;
-import org.opensearch.client.opensearch._types.query_dsl.MatchQuery;
-import org.opensearch.client.opensearch._types.query_dsl.Query;
-import org.opensearch.client.opensearch._types.query_dsl.RangeQuery;
+import org.opensearch.client.opensearch._types.SortOrder;
+import org.opensearch.client.opensearch._types.mapping.FieldType;
+import org.opensearch.client.opensearch._types.query_dsl.*;
 import org.opensearch.client.opensearch.core.SearchRequest;
 import org.opensearch.client.opensearch.core.search.Hit;
 import org.opensearch.client.util.ObjectBuilder;
@@ -23,7 +22,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@SuppressWarnings("Indentation")
+@SuppressWarnings({"Indentation", "LineLength"})
 public class OpenSearchCustomClient {
 
     private final OpenSearchProperties openSearchProperties;
@@ -51,16 +50,45 @@ public class OpenSearchCustomClient {
                         .query(builder1 -> builder1.stringValue("Wallet balance"))))
                 .query(q -> q.bool(builder -> builder.filter(this::range)))
                 .build();
-        var collect = openSearchClient.search(s -> {
-                            s.index(openSearchProperties.getIndex());
-                            s.query(boolQuery._toQuery());
-                            return s;
-                        },
+        var collect = openSearchClient.search(s -> s
+                                .index(openSearchProperties.getIndex())
+                                .sort(builder -> builder
+                                        .field(builder1 -> builder1
+                                                .field("@timestamp")
+                                                .order(SortOrder.Desc)
+                                                .unmappedType(FieldType.Boolean)))
+                                .docvalueFields(
+                                        new FieldAndFormat.Builder().field("@timestamp").format("date_time").build(),
+                                        new FieldAndFormat.Builder().field("context.auth.expiration").format("date_time").build(),
+                                        new FieldAndFormat.Builder().field("context.env.now").format("date_time").build(),
+                                        new FieldAndFormat.Builder().field("deadline").format("date_time").build(),
+                                        new FieldAndFormat.Builder().field("reschedule_time").format("date_time").build(),
+                                        new FieldAndFormat.Builder().field("target_timestamp").format("date_time").build())
+                                .query(builder -> builder
+                                        .bool(builder1 -> builder1
+                                                .must(builder2 -> builder2
+                                                        .queryString(builder3 -> builder3
+                                                                .query("\"Wallet balance\"")
+                                                                .analyzeWildcard(true)
+                                                                .timeZone("Europe/Moscow")))
+                                                .filter(new RangeQuery.Builder()
+                                                                .field("@timestamp")
+//                                                            .gte(JsonData.of(String.format("now-%ss", intervalTime)))
+                                                                .gte(JsonData.of("2023-08-14T07:11:43.644Z"))
+                                                                .lte(JsonData.of("2023-08-14T07:26:43.644Z"))
+                                                                .format("strict_date_optional_time")
+                                                                .build()
+                                                                ._toQuery(),
+                                                        new MatchPhraseQuery.Builder()
+                                                                .field("kubernetes.container_name")
+                                                                .query("fistful")
+                                                                .build()
+                                                                ._toQuery()))),
                         Object.class).hits().hits()
                 .stream()
                 .map(Hit::source)
                 .collect(Collectors.toList());
-        log.info("{}", collect);
+        log.info("size {}, list {}", collect.size(), collect);
 //        return openSearchClient.search(searchRequest, WalletBalanceData.class).hits().hits()
 //                .stream()
 //                .map(Hit::source)
