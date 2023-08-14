@@ -33,8 +33,10 @@ public class OpenSearchCustomClient {
 
     @SneakyThrows
     public List<WalletBalanceData> getWalletBalanceData() {
-        MatchQuery mustMatchQuery1 = new MatchQuery.Builder().field("message").query(builder -> builder.stringValue("Wallet balance")).build();
-        MatchQuery mustMatchQuery2 = new MatchQuery.Builder().field("kubernetes.container_name").query(builder -> builder.stringValue("fistful")).build();
+        MatchQuery mustMatchQuery1 = new MatchQuery.Builder().field("message")
+                .query(builder -> builder.stringValue("Wallet balance")).build();
+        MatchQuery mustMatchQuery2 = new MatchQuery.Builder().field("kubernetes.container_name")
+                .query(builder -> builder.stringValue("fistful")).build();
         List mustQueries = new ArrayList<>();
         mustQueries.add(mustMatchQuery1._toQuery());
         mustQueries.add(mustMatchQuery2._toQuery());
