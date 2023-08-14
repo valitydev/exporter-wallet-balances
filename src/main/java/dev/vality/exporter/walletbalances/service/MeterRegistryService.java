@@ -11,6 +11,10 @@ public class MeterRegistryService {
 
     private final MeterRegistry meterRegistry;
 
+    public <T> void registry(Gauge.Builder<T> builder) {
+        builder.register(meterRegistry);
+    }
+
     public long getRegisteredMetricsSize(String name) {
         return meterRegistry.getMeters().stream()
                 .filter(meter -> meter.getId().getName().equals(name))

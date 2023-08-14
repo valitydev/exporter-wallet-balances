@@ -3,13 +3,11 @@ package dev.vality.exporter.walletbalances.service;
 import dev.vality.exporter.walletbalances.model.CustomTag;
 import dev.vality.exporter.walletbalances.model.Metric;
 import dev.vality.exporter.walletbalances.model.WalletBalanceData;
-import io.micrometer.core.instrument.MultiGauge;
+import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.Tags;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -18,18 +16,18 @@ import java.util.stream.Collectors;
 public class WalletBalancesService {
 
     private final OpenSearchService openSearchService;
-    private final MultiGauge multiGaugeWalletBalancesAmount;
     private final MeterRegistryService meterRegistryService;
 
     public void registerMetrics() {
         var walletBalanceData = openSearchService.getWalletBalanceDataByInterval();
-        var rows = walletBalanceData.stream()
-                .map(dto -> {
+        walletBalanceData
+                .forEach(dto -> {
                     final var amount = Double.parseDouble(dto.getWallet().getBalance().getAmount());
-                    return MultiGauge.Row.of(getTags(dto), this, o -> amount);
-                })
-                .collect(Collectors.<MultiGauge.Row<?>>toList());
-        multiGaugeWalletBalancesAmount.register(rows, true);
+                    var gauge = Gauge.builder(Metric.WALLET_BALANCES_AMOUNT.getName(), this, o -> amount)
+                            .description(Metric.WALLET_BALANCES_AMOUNT.getDescription())
+                            .tags(getTags(dto));
+                    meterRegistryService.registry(gauge);
+                });
         var registeredMetricsSize = meterRegistryService.getRegisteredMetricsSize(Metric.WALLET_BALANCES_AMOUNT.getName());
         log.info("Payments with final statuses metrics have been registered to 'prometheus', " +
                 "registeredMetricsSize = {}, clientSize = {}", registeredMetricsSize, walletBalanceData.size());
