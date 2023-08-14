@@ -36,7 +36,7 @@ public class OpenSearchCustomClient {
                         .query(builder1 -> builder1.stringValue("Wallet balance"))))
                 .query(q -> q.bool(builder -> builder.filter(this::range)))
                 .build();
-        var collect = openSearchClient.search(searchRequest, String.class).hits().hits()
+        var collect = openSearchClient.search(searchRequest, JsonData.class).hits().hits()
                 .stream()
                 .map(Hit::source)
                 .collect(Collectors.toList());
