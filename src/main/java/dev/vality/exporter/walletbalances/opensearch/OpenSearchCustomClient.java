@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@SuppressWarnings("Indentation")
 public class OpenSearchCustomClient {
 
     private final OpenSearchProperties openSearchProperties;
@@ -48,9 +49,10 @@ public class OpenSearchCustomClient {
                 .query(q -> q.bool(builder -> builder.filter(this::range)))
                 .build();
         var collect = openSearchClient.search(s -> {
-                    s.query(boolQuery._toQuery());
-                    return s;
-                }, Object.class).hits().hits()
+                            s.query(boolQuery._toQuery());
+                            return s;
+                        },
+                        Object.class).hits().hits()
                 .stream()
                 .map(Hit::source)
                 .collect(Collectors.toList());
