@@ -1,6 +1,6 @@
 package dev.vality.exporter.walletbalances.service;
 
-import dev.vality.exporter.walletbalances.opensearch.OpenSearchCustomClient;
+import dev.vality.exporter.walletbalances.opensearch.OpenSearchService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -10,10 +10,10 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class WalletBalancesService {
 
-    private final OpenSearchCustomClient openSearchCustomClient;
+    private final OpenSearchService openSearchService;
 
     public void registerMetrics() {
-        var walletBalanceData = openSearchCustomClient.getWalletBalanceData();
+        var walletBalanceData = openSearchService.getWalletBalanceDataByInterval();
         log.info("walletBalanceData {}", walletBalanceData);
     }
 }

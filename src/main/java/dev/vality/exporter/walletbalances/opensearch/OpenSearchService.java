@@ -20,8 +20,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@SuppressWarnings({"Indentation", "LineLength"})
-public class OpenSearchCustomClient {
+public class OpenSearchService {
 
     private static final String KUBERNETES_CONTAINER_NAME = "kubernetes.container_name";
     private static final String TIMESTAMP = "@timestamp";
@@ -37,7 +36,7 @@ public class OpenSearchCustomClient {
     private String intervalTime;
 
     @SneakyThrows
-    public List<WalletBalanceData> getWalletBalanceData() {
+    public List<WalletBalanceData> getWalletBalanceDataByInterval() {
         return openSearchClient.search(s -> s
                                 .index(openSearchProperties.getIndex())
                                 .sort(builder -> builder
@@ -56,7 +55,8 @@ public class OpenSearchCustomClient {
                                                                 .analyzeWildcard(true)))
                                                 .filter(new RangeQuery.Builder()
                                                                 .field(TIMESTAMP)
-                                                                .gte(JsonData.of(String.format("now-%ss", intervalTime)))
+                                                                .gte(JsonData.of(
+                                                                        String.format("now-%ss", intervalTime)))
                                                                 .format(STRICT_DATE_OPTIONAL_TIME)
                                                                 .build()
                                                                 ._toQuery(),
