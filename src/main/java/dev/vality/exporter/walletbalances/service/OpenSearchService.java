@@ -43,7 +43,7 @@ public class OpenSearchService {
                                 .sort(builder -> builder
                                         .field(builder1 -> builder1
                                                 .field(TIMESTAMP)
-                                                .order(SortOrder.Desc)
+                                                .order(SortOrder.Asc)
                                                 .unmappedType(FieldType.Boolean)))
                                 .docvalueFields(builder -> builder
                                         .field(TIMESTAMP)
