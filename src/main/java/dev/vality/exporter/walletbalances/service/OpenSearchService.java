@@ -39,7 +39,7 @@ public class OpenSearchService {
     @SneakyThrows
     public List<WalletBalanceData> getWalletsBalancesDataByInterval() {
         return openSearchClient.search(s -> s
-//                                .size(10000)
+                                .size(10000)
                                 .index(openSearchProperties.getIndex())
                                 .sort(builder -> builder
                                         .field(builder1 -> builder1

@@ -29,7 +29,7 @@ public class WalletBalancesService {
         }
         objectObjectHashMap.values().forEach(
                 dto -> {
-                    log.info("walletBalanceData {}", dto);
+                    log.info("objectObjectHashMap {}", dto);
                     final var amount = Double.parseDouble(dto.getWallet().getBalance().getAmount());
                     var gauge = Gauge.builder(Metric.WALLET_BALANCES_AMOUNT.getName(), this, o -> amount)
                             .description(Metric.WALLET_BALANCES_AMOUNT.getDescription())
