@@ -4,6 +4,7 @@ import dev.vality.exporter.walletbalances.config.OpenSearchProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.opensearch.client.Request;
 import org.opensearch.client.json.JsonData;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch._types.query_dsl.BoolQuery;
@@ -35,7 +36,7 @@ public class OpenSearchCustomClient {
     @SneakyThrows
     public List<WalletBalanceData> getWalletBalanceData() {
         MatchQuery mustMatchQuery1 = new MatchQuery.Builder().field("message")
-                .query(builder -> builder.stringValue("Wallet balance")).build();
+                .query(builder -> builder.stringValue("\"Wallet balance\"")).build();
         MatchQuery mustMatchQuery2 = new MatchQuery.Builder().field("kubernetes.container_name")
                 .query(builder -> builder.stringValue("fistful")).build();
         var timestamp = timestamp(new RangeQuery.Builder()).build();
@@ -45,6 +46,7 @@ public class OpenSearchCustomClient {
         mustQueries.add(mustMatchQuery1._toQuery());
         mustQueries.add(mustMatchQuery2._toQuery());
         BoolQuery boolQuery = new BoolQuery.Builder().must(mustQueries).filter(filterQueries).build();
+        new Request()
         var searchRequest = new SearchRequest.Builder()
                 .index(openSearchProperties.getIndex())
                 .query(q -> q.match(builder -> builder.field("message")

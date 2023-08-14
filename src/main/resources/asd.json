@@ -1,0 +1,98 @@
+{
+  "version": true,
+  "size": 500,
+  "sort": [
+    {
+      "@timestamp": {
+        "order": "desc",
+        "unmapped_type": "boolean"
+      }
+    }
+  ],
+  "aggs": {
+    "2": {
+      "date_histogram": {
+        "field": "@timestamp",
+        "fixed_interval": "30s",
+        "time_zone": "Europe/Moscow",
+        "min_doc_count": 1
+      }
+    }
+  },
+  "stored_fields": [
+    "*"
+  ],
+  "script_fields": {},
+  "docvalue_fields": [
+    {
+      "field": "@timestamp",
+      "format": "date_time"
+    },
+    {
+      "field": "context.auth.expiration",
+      "format": "date_time"
+    },
+    {
+      "field": "context.env.now",
+      "format": "date_time"
+    },
+    {
+      "field": "deadline",
+      "format": "date_time"
+    },
+    {
+      "field": "reschedule_time",
+      "format": "date_time"
+    },
+    {
+      "field": "target_timestamp",
+      "format": "date_time"
+    }
+  ],
+  "_source": {
+    "excludes": []
+  },
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "query_string": {
+            "query": "\"Wallet balance\"",
+            "analyze_wildcard": true,
+            "time_zone": "Europe/Moscow"
+          }
+        }
+      ],
+      "filter": [
+        {
+          "match_phrase": {
+            "kubernetes.container_name": "fistful"
+          }
+        },
+        {
+          "range": {
+            "@timestamp": {
+              "gte": "2023-08-14T07:11:43.644Z",
+              "lte": "2023-08-14T07:26:43.644Z",
+              "format": "strict_date_optional_time"
+            }
+          }
+        }
+      ],
+      "should": [],
+      "must_not": []
+    }
+  },
+  "highlight": {
+    "pre_tags": [
+      "@opensearch-dashboards-highlighted-field@"
+    ],
+    "post_tags": [
+      "@/opensearch-dashboards-highlighted-field@"
+    ],
+    "fields": {
+      "*": {}
+    },
+    "fragment_size": 2147483647
+  }
+}
