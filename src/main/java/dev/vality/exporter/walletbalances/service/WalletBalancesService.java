@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -19,10 +21,15 @@ public class WalletBalancesService {
     private final MeterRegistryService meterRegistryService;
 
     public void registerMetrics() {
-        var walletBalanceData = openSearchService.getWalletBalanceDataByInterval();
-        walletBalanceData
-                .forEach(dto -> {
-                    log.info("walletBalanceData {}", walletBalanceData);
+        var walletsBalancesDataByInterval = openSearchService.getWalletsBalancesDataByInterval();
+        var objectObjectHashMap = new HashMap<String, WalletBalanceData>();
+        for (WalletBalanceData walletBalanceData : walletsBalancesDataByInterval) {
+            log.info("walletBalanceData {}", walletBalanceData);
+            objectObjectHashMap.put(walletBalanceData.getWallet().getId(), walletBalanceData);
+        }
+        objectObjectHashMap.values().forEach(
+                dto -> {
+                    log.info("walletBalanceData {}", dto);
                     final var amount = Double.parseDouble(dto.getWallet().getBalance().getAmount());
                     var gauge = Gauge.builder(Metric.WALLET_BALANCES_AMOUNT.getName(), this, o -> amount)
                             .description(Metric.WALLET_BALANCES_AMOUNT.getDescription())
@@ -31,7 +38,7 @@ public class WalletBalancesService {
                 });
         var registeredMetricsSize = meterRegistryService.getRegisteredMetricsSize(Metric.WALLET_BALANCES_AMOUNT.getName());
         log.info("Payments with final statuses metrics have been registered to 'prometheus', " +
-                "registeredMetricsSize = {}, clientSize = {}", registeredMetricsSize, walletBalanceData.size());
+                "registeredMetricsSize = {}, clientSize = {}", registeredMetricsSize, walletsBalancesDataByInterval.size());
     }
 
     private Tags getTags(WalletBalanceData dto) {
