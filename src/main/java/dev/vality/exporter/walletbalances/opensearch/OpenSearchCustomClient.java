@@ -52,6 +52,7 @@ public class OpenSearchCustomClient {
                 .query(q -> q.bool(builder -> builder.filter(this::range)))
                 .build();
         var collect = openSearchClient.search(s -> {
+                            s.index(openSearchProperties.getIndex());
                             s.query(boolQuery._toQuery());
                             return s;
                         },
