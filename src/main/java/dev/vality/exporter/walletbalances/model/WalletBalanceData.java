@@ -1,4 +1,4 @@
-package dev.vality.exporter.walletbalances.opensearch;
+package dev.vality.exporter.walletbalances.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;

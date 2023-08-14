@@ -1,6 +1,7 @@
-package dev.vality.exporter.walletbalances.opensearch;
+package dev.vality.exporter.walletbalances.service;
 
 import dev.vality.exporter.walletbalances.config.OpenSearchProperties;
+import dev.vality.exporter.walletbalances.model.WalletBalanceData;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
