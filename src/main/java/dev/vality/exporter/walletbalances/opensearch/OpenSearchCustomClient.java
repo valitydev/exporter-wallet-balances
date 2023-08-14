@@ -38,10 +38,13 @@ public class OpenSearchCustomClient {
                 .query(builder -> builder.stringValue("Wallet balance")).build();
         MatchQuery mustMatchQuery2 = new MatchQuery.Builder().field("kubernetes.container_name")
                 .query(builder -> builder.stringValue("fistful")).build();
+        var timestamp = timestamp(new RangeQuery.Builder()).build();
+        List filterQueries = new ArrayList<>();
+        filterQueries.add(timestamp._toQuery());
         List mustQueries = new ArrayList<>();
         mustQueries.add(mustMatchQuery1._toQuery());
         mustQueries.add(mustMatchQuery2._toQuery());
-        BoolQuery boolQuery = new BoolQuery.Builder().must(mustQueries).minimumShouldMatch("1").build();
+        BoolQuery boolQuery = new BoolQuery.Builder().must(mustQueries).filter(filterQueries).build();
         var searchRequest = new SearchRequest.Builder()
                 .index(openSearchProperties.getIndex())
                 .query(q -> q.match(builder -> builder.field("message")
