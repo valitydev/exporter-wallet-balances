@@ -4,7 +4,6 @@ import dev.vality.exporter.walletbalances.config.OpenSearchProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.opensearch.client.Request;
 import org.opensearch.client.json.JsonData;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch._types.query_dsl.BoolQuery;
@@ -46,7 +45,6 @@ public class OpenSearchCustomClient {
         mustQueries.add(mustMatchQuery1._toQuery());
         mustQueries.add(mustMatchQuery2._toQuery());
         BoolQuery boolQuery = new BoolQuery.Builder().must(mustQueries).filter(filterQueries).build();
-        new Request()
         var searchRequest = new SearchRequest.Builder()
                 .index(openSearchProperties.getIndex())
                 .query(q -> q.match(builder -> builder.field("message")
