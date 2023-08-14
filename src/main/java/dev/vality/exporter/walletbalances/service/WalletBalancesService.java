@@ -22,6 +22,7 @@ public class WalletBalancesService {
         var walletBalanceData = openSearchService.getWalletBalanceDataByInterval();
         walletBalanceData
                 .forEach(dto -> {
+                    log.info("walletBalanceData {}", walletBalanceData);
                     final var amount = Double.parseDouble(dto.getWallet().getBalance().getAmount());
                     var gauge = Gauge.builder(Metric.WALLET_BALANCES_AMOUNT.getName(), this, o -> amount)
                             .description(Metric.WALLET_BALANCES_AMOUNT.getDescription())
