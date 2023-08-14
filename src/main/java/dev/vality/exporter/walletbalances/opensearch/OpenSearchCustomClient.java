@@ -8,14 +8,14 @@ import org.opensearch.client.json.JsonData;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch._types.SortOrder;
 import org.opensearch.client.opensearch._types.mapping.FieldType;
-import org.opensearch.client.opensearch._types.query_dsl.*;
-import org.opensearch.client.opensearch.core.SearchRequest;
+import org.opensearch.client.opensearch._types.query_dsl.MatchPhraseQuery;
+import org.opensearch.client.opensearch._types.query_dsl.Query;
+import org.opensearch.client.opensearch._types.query_dsl.RangeQuery;
 import org.opensearch.client.opensearch.core.search.Hit;
 import org.opensearch.client.util.ObjectBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,49 +33,26 @@ public class OpenSearchCustomClient {
 
     @SneakyThrows
     public List<WalletBalanceData> getWalletBalanceData() {
-        MatchQuery mustMatchQuery1 = new MatchQuery.Builder().field("message")
-                .query(builder -> builder.stringValue("\"Wallet balance\"")).build();
-        MatchQuery mustMatchQuery2 = new MatchQuery.Builder().field("kubernetes.container_name")
-                .query(builder -> builder.stringValue("fistful")).build();
-        var timestamp = timestamp(new RangeQuery.Builder()).build();
-        List filterQueries = new ArrayList<>();
-        filterQueries.add(timestamp._toQuery());
-        List mustQueries = new ArrayList<>();
-        mustQueries.add(mustMatchQuery1._toQuery());
-        mustQueries.add(mustMatchQuery2._toQuery());
-        BoolQuery boolQuery = new BoolQuery.Builder().must(mustQueries).filter(filterQueries).build();
-        var searchRequest = new SearchRequest.Builder()
-                .index(openSearchProperties.getIndex())
-                .query(q -> q.match(builder -> builder.field("message")
-                        .query(builder1 -> builder1.stringValue("Wallet balance"))))
-                .query(q -> q.bool(builder -> builder.filter(this::range)))
-                .build();
         var collect = openSearchClient.search(s -> s
                                 .index(openSearchProperties.getIndex())
+                                .size(500)
                                 .sort(builder -> builder
                                         .field(builder1 -> builder1
                                                 .field("@timestamp")
                                                 .order(SortOrder.Desc)
                                                 .unmappedType(FieldType.Boolean)))
-                                .docvalueFields(
-                                        new FieldAndFormat.Builder().field("@timestamp").format("date_time").build(),
-                                        new FieldAndFormat.Builder().field("context.auth.expiration").format("date_time").build(),
-                                        new FieldAndFormat.Builder().field("context.env.now").format("date_time").build(),
-                                        new FieldAndFormat.Builder().field("deadline").format("date_time").build(),
-                                        new FieldAndFormat.Builder().field("reschedule_time").format("date_time").build(),
-                                        new FieldAndFormat.Builder().field("target_timestamp").format("date_time").build())
+                                .docvalueFields(builder -> builder
+                                        .field("@timestamp")
+                                        .format("date_time"))
                                 .query(builder -> builder
                                         .bool(builder1 -> builder1
                                                 .must(builder2 -> builder2
                                                         .queryString(builder3 -> builder3
                                                                 .query("\"Wallet balance\"")
-                                                                .analyzeWildcard(true)
-                                                                .timeZone("Europe/Moscow")))
+                                                                .analyzeWildcard(true)))
                                                 .filter(new RangeQuery.Builder()
                                                                 .field("@timestamp")
-//                                                            .gte(JsonData.of(String.format("now-%ss", intervalTime)))
-                                                                .gte(JsonData.of("2023-08-14T07:11:43.644Z"))
-                                                                .lte(JsonData.of("2023-08-14T07:26:43.644Z"))
+                                                                .gte(JsonData.of(String.format("now-%ss", intervalTime)))
                                                                 .format("strict_date_optional_time")
                                                                 .build()
                                                                 ._toQuery(),
@@ -84,7 +61,9 @@ public class OpenSearchCustomClient {
                                                                 .query("fistful")
                                                                 .build()
                                                                 ._toQuery()))),
-                        Object.class).hits().hits()
+                        Object.class)
+                .hits()
+                .hits()
                 .stream()
                 .map(Hit::source)
                 .collect(Collectors.toList());
