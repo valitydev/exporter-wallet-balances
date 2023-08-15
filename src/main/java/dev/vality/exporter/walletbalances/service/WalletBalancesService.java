@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -17,20 +19,26 @@ public class WalletBalancesService {
 
     private final OpenSearchService openSearchService;
     private final MeterRegistryService meterRegistryService;
+    private final Map<String, Double> walletBalancesAggregatesMap;
 
     public void registerMetrics() {
-        var walletBalanceData = openSearchService.getWalletBalanceDataByInterval();
-        walletBalanceData
-                .forEach(dto -> {
-                    final var amount = Double.parseDouble(dto.getWallet().getBalance().getAmount());
-                    var gauge = Gauge.builder(Metric.WALLET_BALANCES_AMOUNT.getName(), this, o -> amount)
-                            .description(Metric.WALLET_BALANCES_AMOUNT.getDescription())
-                            .tags(getTags(dto));
-                    meterRegistryService.registry(gauge);
-                });
+        var walletsBalancesDataByInterval = openSearchService.getWalletsBalancesDataByInterval();
+        for (WalletBalanceData walletBalanceData : walletsBalancesDataByInterval) {
+            var id = walletBalanceData.getWallet().getId();
+            if (!walletBalancesAggregatesMap.containsKey(id)) {
+                var gauge = Gauge.builder(
+                                Metric.WALLET_BALANCES_AMOUNT.getName(),
+                                walletBalancesAggregatesMap,
+                                map -> map.get(id))
+                        .description(Metric.WALLET_BALANCES_AMOUNT.getDescription())
+                        .tags(getTags(walletBalanceData));
+                meterRegistryService.registry(gauge);
+            }
+            walletBalancesAggregatesMap.put(id, Double.parseDouble(walletBalanceData.getWallet().getBalance().getAmount()));
+        }
         var registeredMetricsSize = meterRegistryService.getRegisteredMetricsSize(Metric.WALLET_BALANCES_AMOUNT.getName());
         log.info("Payments with final statuses metrics have been registered to 'prometheus', " +
-                "registeredMetricsSize = {}, clientSize = {}", registeredMetricsSize, walletBalanceData.size());
+                "registeredMetricsSize = {}, clientSize = {}", registeredMetricsSize, walletsBalancesDataByInterval.size());
     }
 
     private Tags getTags(WalletBalanceData dto) {

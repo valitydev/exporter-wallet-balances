@@ -16,6 +16,6 @@ public enum Metric {
     private final String description;
 
     private static String formatWithPrefix(String name) {
-        return String.format("ewm_%s", name);
+        return String.format("ewb_%s", name);
     }
 }
