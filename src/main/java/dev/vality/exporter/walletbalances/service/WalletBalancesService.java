@@ -23,7 +23,7 @@ public class WalletBalancesService {
 
     public void registerMetrics() {
         var walletsBalancesDataByInterval = openSearchService.getWalletsBalancesDataByInterval();
-        for (WalletBalanceData walletBalanceData : walletsBalancesDataByInterval) {
+        for (var walletBalanceData : walletsBalancesDataByInterval) {
             var id = walletBalanceData.getWallet().getId();
             if (!walletBalancesAggregatesMap.containsKey(id)) {
                 var gauge = Gauge.builder(
