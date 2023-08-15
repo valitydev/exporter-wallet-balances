@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Configuration
-public class GaugeConfig {
+public class StorageConfig {
 
     @Bean
     public Map<String, Double> walletBalancesAggregatesMap() {

@@ -37,7 +37,7 @@ public class WalletBalancesService {
             walletBalancesAggregatesMap.put(id, Double.parseDouble(walletBalanceData.getWallet().getBalance().getAmount()));
         }
         var registeredMetricsSize = meterRegistryService.getRegisteredMetricsSize(Metric.WALLET_BALANCES_AMOUNT.getName());
-        log.info("Payments with final statuses metrics have been registered to 'prometheus', " +
+        log.info("Wallet balances with final statuses metrics have been registered to 'prometheus', " +
                 "registeredMetricsSize = {}, clientSize = {}", registeredMetricsSize, walletsBalancesDataByInterval.size());
     }
 
